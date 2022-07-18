@@ -40,6 +40,10 @@ ronpari image viewer to /path/to/chapter
 
 > ronpari <manga name> --download
 
+## List and read manga
+
+> ronpari <manga name> --read
+
 ## Download all or just range of chapters (next 10?)
 
 > TODO!

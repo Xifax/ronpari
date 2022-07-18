@@ -5,15 +5,21 @@ from MangaDexPy import Manga
 from MangaDexPy import MangaDex
 from MangaDexPy import downloader
 
-from . import console
+from ronpari.store import get_user
+from ronpari.terminal import console
 
-client = MangaDex()
-# TODO: optionally login (get from ENV: login|passwd, if available -> login)
+
+def get_client():
+    client = MangaDex()
+    auth = get_user()
+    client.login(auth.get("user"), auth.get("password"))
+    return client
+    # TODO: optionally login (get from ENV: login|passwd, if available -> login)
 
 
 def search_manga(title: str) -> List[Manga]:
     with console.status(f"Searching {title}..."):
-        return client.search(obj="manga", params={"title": title})
+        return get_client().search(obj="manga", params={"title": title})
 
 
 def download_manga(manga: Manga) -> bool:
