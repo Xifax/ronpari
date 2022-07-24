@@ -1,6 +1,8 @@
+import os
 import shutil
 from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
 
 # TODO: move to downloader?
 import requests
@@ -63,6 +65,9 @@ def download_chapter(manga: str, chapter: Chapter):
         console.print("[yellow]Could not get manga images![/yellow]")
         return
 
+    # print(images)
+    # return
+
     # TODO: refactor!
     auth = get_user()
 
@@ -70,7 +75,10 @@ def download_chapter(manga: str, chapter: Chapter):
     chapter_path = Path(auth.get("path")) / manga / str(chapter.chapter)
     chapter_path.mkdir(parents=True, exist_ok=True)
 
-    counter = 0
+    # TODO: sort by chapters or just get names from url?
+    # images = sorted(images, key=lambda )
+
+    # counter = 0
     for image_url in track(
         images, description=f"Downloading images to {str(chapter_path)}"
     ):
@@ -79,9 +87,15 @@ def download_chapter(manga: str, chapter: Chapter):
         if res.status_code == 200:
             # TODO: check extension!
             # TODO: optionally include chapter name, e.g. 26.0 ~ Chapter Name [volume?]
-            with open(str(chapter_path / f"{counter}.png"), "wb") as f:
+
+            url = urlparse(image_url)
+            name = os.path.basename(url.path)
+            number, postfix = name.split("-")
+            _, extension = postfix.split(".")
+
+            with open(str(chapter_path / f"{number}.{extension}"), "wb") as f:
                 shutil.copyfileobj(res.raw, f)
-            counter += 1
+            # counter += 1
 
 
 # def download_chapter(chapter: Chapter) -> bool:

@@ -1,5 +1,6 @@
+import re
+
 import rich_click as click
-from rich import inspect
 
 # import click
 from rich.panel import Panel
@@ -19,6 +20,8 @@ from ronpari.store import update_user
 
 from . import console
 from . import search_manga
+
+# from rich import inspect
 
 
 @click.group()
@@ -186,23 +189,36 @@ def download(title):
         # console.print(tree)
         console.print(table)
 
-    chapter_number = Prompt.ask("Chapter to download")
-    selected_chapter = chapter_map[chapter_number]
+    chapter_number = Prompt.ask("Chapter(s) to download (1 2 5 or 2..10)")
 
-    chapter = get_chapter(selected_chapter.get("id"))
-    inspect(chapter)
-    # console.print(chapter.fetch_chapter_images())
+    # Fill chapter numbers from X..Y
+    if ".." in chapter_number:
+        start, end = re.split(r"\.\.", chapter_number)
+        # TODO: how to populate chapters like '31.5'?
+        # TODO: Consult with chapter_map?
+        numbers = list(range(int(start), int(end) + 1))
+        # Convert to string for convenience
+        numbers = list(map(str, numbers))
+    # Otherwise separate by delimeters
+    elif "," in chapter_number:
+        numbers = chapter_number.split(",")
+    elif " " in chapter_number:
+        numbers = chapter_number.split()
+    # Or consider it single chapter
+    else:
+        numbers = [chapter_number]
 
-    # chapters = list(sorted(chapters, key=lambda c: c.published_at))
+    for n in numbers:
+        selected_chapter = chapter_map[n.strip()]
+        chapter = get_chapter(selected_chapter.get("id"))
+        download_chapter(manga_title, chapter)
 
-    # ch = chapters[chapter_number - 1]
-    # inspect(ch)
-
-    # TODO: maybe add last chapter?
-    update_manga(manga_title, len(chapter_map.keys()), chapter.chapter)
-
-    # TODO: allow to download range of chapters
-    download_chapter(manga_title, chapter)
+    update_manga(
+        manga_title,
+        total_chapters=len(chapter_map.keys()),
+        current_chapter=numbers[0],
+        last_downloaded=numbers[-1],
+    )
 
 
 @manga_cli.command()

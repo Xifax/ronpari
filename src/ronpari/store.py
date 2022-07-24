@@ -19,7 +19,7 @@ def get_user():
         return results[0]
 
 
-def update_manga(title, total_chapters, current_chapter):
+def update_manga(title, total_chapters, current_chapter, last_downloaded):
     Manga = Query()
     manga_table = db.table("manga")
     manga_table.upsert(
@@ -27,6 +27,7 @@ def update_manga(title, total_chapters, current_chapter):
             "title": title,
             "total_chapters": total_chapters,
             "current_chapter": current_chapter,
+            "last_downloaded": last_downloaded,
         },
         Manga.title == title,
     )
