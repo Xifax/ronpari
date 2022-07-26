@@ -92,8 +92,10 @@ def download_chapter(manga: str, chapter: Chapter):
             name = os.path.basename(url.path)
             number, postfix = name.split("-")
             _, extension = postfix.split(".")
+            number = int(number)
 
-            with open(str(chapter_path / f"{number}.{extension}"), "wb") as f:
+            # TODO: prefix number
+            with open(str(chapter_path / f"{number:04}.{extension}"), "wb") as f:
                 shutil.copyfileobj(res.raw, f)
             # counter += 1
 
