@@ -1,4 +1,5 @@
 import re
+import threading
 from pathlib import Path
 
 # import rich_click as click
@@ -196,42 +197,99 @@ def read(number, chapter=None):
     if chapter is not None:
         active_chapter = chapter
 
-    print(chapter)
+    chapter_map: dict = selected_manga.get("chapter_map", {})
+    selected_chapter = _get_chapter(active_chapter, chapter_map)
 
-    path = Path(get_path()) / title / str(active_chapter)
+    path = Path(get_path()) / title / str(float(selected_chapter.get("chapter")))
 
-    last_downloaded = None
+    # TODO: fix last downloaded
+    # last_downloaded = None
     # Try to download next chapter
     if not path.exists():
-        chapter_map: dict = selected_manga.get("chapter_map", {})
-        if active_chapter == int(active_chapter):
-            active_chapter = int(active_chapter)
-        selected_chapter = chapter_map[str(active_chapter)]
+        selected_chapter = _get_chapter(active_chapter, chapter_map)
         manga_chapter = get_chapter(selected_chapter.get("id"))
         download_chapter(title, manga_chapter)
-        last_downloaded = chapter
+        # last_downloaded = chapter
 
     # if imv:
     import subprocess
 
+    console.print(path)
+    threading.Thread(
+        target=_download_in_background,
+        name="Fetching next chapter",
+        args=[title, active_chapter, chapter_map],
+    ).start()
+
     cmd = ["imv", str(path)]
     subprocess.Popen(cmd).wait()
 
-    # TODO: when finished: update manga -> increment current chapter
-    update_manga(
-        title=title,
-        # TODO: increment according to chapter_map IF POSSIBLE
-        current_chapter=active_chapter,
-        last_downloaded=last_downloaded,
-    )
+    # TODO: download next chapter in background?
 
     # image_path = str(path / "0001.png")
     # view_image(image_path)
+
+    # Increment according to chapter_map IF POSSIBLE
+    next_chapter = _get_chapter(active_chapter, chapter_map)
+    available_chapters = sorted(
+        chapter_map.keys(), key=lambda c: float(c) if c != "none" else 0.0
+    )
+    try:
+        current_chapter_index = available_chapters.index(next_chapter.get("chapter"))
+        next_chapter = available_chapters[current_chapter_index + 1]
+        console.print(f"Next chapter is {next_chapter}")
+    except (ValueError, IndexError) as e:
+        # TODO: print "NO NEXT CHAPTER" or something
+        console.print(e)
+
+    # When finished: update manga -> increment current chapter
+    update_manga(
+        title=title,
+        current_chapter=next_chapter,
+        # last_downloaded=last_downloaded,
+    )
 
 
 ###################
 # Utility methods #
 ###################
+
+
+def _get_chapter(number: float | int | str, chapter_map: dict) -> dict:
+    try:
+        if number == int(number):
+            number = int(number)
+    except ValueError:
+        ...
+    return chapter_map[str(number)]
+
+
+def _download_in_background(title, active_chapter, chapter_map):
+    # TODO: move to separate function and refactor
+    next_chapter = _get_chapter(active_chapter, chapter_map)
+    available_chapters = sorted(
+        chapter_map.keys(), key=lambda c: float(c) if c != "none" else 0.0
+    )
+    try:
+        current_chapter_index = available_chapters.index(next_chapter.get("chapter"))
+        next_chapter_number = available_chapters[current_chapter_index + 1]
+        # console.print(f"Next chapter is {next_chapter}")
+    except (ValueError, IndexError) as e:
+        # TODO: print "NO NEXT CHAPTER" or something
+        console.print(e)
+
+    ########### .. ###########
+
+    # TODO: move to seprate function and refactor
+    selected_chapter = _get_chapter(next_chapter_number, chapter_map)
+    path = Path(get_path()) / title / str(float(selected_chapter.get("chapter")))
+
+    # last_downloaded = None
+    # Try to download next chapter
+    if not path.exists():
+        manga_chapter = get_chapter(selected_chapter.get("id"))
+        download_chapter(title, manga_chapter)
+        # last_downloaded = chapter
 
 
 ######################

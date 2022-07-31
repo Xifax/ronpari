@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import List
@@ -9,9 +10,6 @@ import requests
 from mangadex import Api
 from mangadex import Chapter
 from mangadex import Manga
-
-# from MangaDexPy import Chapter
-# from MangaDexPy import Manga
 from MangaDexPy import MangaDex
 from MangaDexPy import downloader
 from rich.progress import track
@@ -37,13 +35,10 @@ def get_client():
 
 def search_manga(title: str) -> List[Manga]:
     with console.status(f"Searching {title}..."):
-        # return get_client().search(obj="manga", params={"title": title})
         return get_client().get_manga_list(title=title)
 
 
 def get_volumes(manga: Manga) -> dict:
-    # return api.get_manga_volumes_and_chapters(manga_id=manga.manga_id,
-    #         kwargs={'translatedLanguage':'en'})
     return api.get_manga_volumes_and_chapters(
         manga_id=manga.manga_id, translatedLanguage="en"
     )
@@ -65,18 +60,11 @@ def download_chapter(manga: str, chapter: Chapter):
         console.print("[yellow]Could not get manga images![/yellow]")
         return
 
-    # print(images)
-    # return
-
     # TODO: refactor!
     auth = get_user()
 
-    # TODO: check/create path
     chapter_path = Path(auth.get("path")) / manga / str(chapter.chapter)
     chapter_path.mkdir(parents=True, exist_ok=True)
-
-    # TODO: sort by chapters or just get names from url?
-    # images = sorted(images, key=lambda )
 
     # counter = 0
     for image_url in track(
@@ -85,24 +73,15 @@ def download_chapter(manga: str, chapter: Chapter):
         res = requests.get(image_url, stream=True)
 
         if res.status_code == 200:
-            # TODO: check extension!
             # TODO: optionally include chapter name, e.g. 26.0 ~ Chapter Name [volume?]
 
             url = urlparse(image_url)
             name = os.path.basename(url.path)
             number, postfix = name.split("-")
             _, extension = postfix.split(".")
-            number = int(number)
+            number = int(re.sub(r"\D", "", number))
+            # number = int(number)
 
-            # TODO: prefix number
+            # Prefix number
             with open(str(chapter_path / f"{number:04}.{extension}"), "wb") as f:
                 shutil.copyfileobj(res.raw, f)
-            # counter += 1
-
-
-# def download_chapter(chapter: Chapter) -> bool:
-#     # TODO: get path from env
-#     # downloader.threaded_dl_chapter(chapter, path="/home/xifax/Downloads/test/")
-#     downloader.dl_chapter(chapter, path="/home/xifax/Downloads/test/")
-#     # TODO: save status to DB if download is complete
-#     return True
