@@ -16,6 +16,7 @@ imutils = "^0.5.4"
 screeninfo = "^0.8"
 Pillow = "^9.2.0"
 pretty-errors = "^1.2.25"
+appdirs = "^1.4.4"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"

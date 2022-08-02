@@ -1,8 +1,16 @@
+from pathlib import Path
+
+from appdirs import AppDirs
 from tinydb import Query
 from tinydb import TinyDB
 
-# TODO: put this file into .config folder
-db = TinyDB("db.json")
+# Initialize user config
+dirs = AppDirs("ronpari")
+config = Path(dirs.user_config_dir)
+if not config.exists():
+    config.mkdir()
+
+db = TinyDB(config / "db.json")
 
 
 def update_user(user, password, path):
@@ -13,18 +21,19 @@ def update_user(user, password, path):
     )
 
 
-def get_user():
+def get_user() -> dict:
     user = db.table("user")
     results = user.all()
     if results:
         return results[0]
+    return {}
 
 
 def get_path() -> str:
     user = get_user()
     if user:
         return user.get("path", "")
-    return ""
+    return "~/Downloads"
 
 
 def update_manga(
@@ -56,6 +65,6 @@ def update_manga(
     manga_table.upsert(data, Manga.title == title)
 
 
-def get_manga():
+def get_manga() -> list:
     manga_table = db.table("manga")
     return manga_table.all()

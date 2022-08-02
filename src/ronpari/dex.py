@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
-# TODO: move to downloader?
 import requests
 from mangadex import Api
 from mangadex import Chapter
 from mangadex import Manga
 from rich.progress import track
 
+from ronpari.store import get_path
 from ronpari.store import get_user
 from ronpari.terminal import console
 
@@ -20,14 +20,8 @@ auth = {}
 
 
 def get_client():
-    # client = MangaDex()
     auth = get_user()
-    # client.login(auth.get("user"), auth.get("password"))
-    # return client
-    # TODO: optionally login (get from ENV: login|passwd, if available -> login)
-
-    # Another mangadex
-    api.login(auth.get("user"), auth.get("password"))
+    api.login(auth.get("user", ""), auth.get("password", ""))
     return api
 
 
@@ -65,13 +59,12 @@ def download_chapter(manga: str, chapter: Chapter):
         console.print("[yellow]Could not get manga images![/yellow]")
         return
 
-    # TODO: refactor!
-    auth = get_user()
+    path = get_path()
 
-    chapter_path = Path(auth.get("path")) / manga / str(chapter.chapter)
+    chapter_path = Path(path) / manga / str(chapter.chapter)
     chapter_path.mkdir(parents=True, exist_ok=True)
 
-    # counter = 0
+    # TODO: move to downloader
     for image_url in track(
         images, description=f"Downloading images to {str(chapter_path)}"
     ):
@@ -85,7 +78,6 @@ def download_chapter(manga: str, chapter: Chapter):
             number, postfix = name.split("-")
             _, extension = postfix.split(".")
             number = int(re.sub(r"\D", "", number))
-            # number = int(number)
 
             # Prefix number
             with open(str(chapter_path / f"{number:04}.{extension}"), "wb") as f:
