@@ -3,9 +3,9 @@ import subprocess
 import threading
 from pathlib import Path
 
-# import rich_click as click
-import click
+# import click
 import pretty_errors
+import rich_click as click
 
 # from rich.panel import Panel
 from rich.prompt import Confirm
@@ -218,7 +218,7 @@ def status(refresh):
     help="Try to open next chapter when closing the image viewer",
 )
 @click.option(
-    "-p", "--auto", is_flag=True, help="Automatically proceed to next chapter"
+    "-a", "--auto", is_flag=True, help="Automatically proceed to next chapter"
 )
 def read(number, chapter=None, proceed=False, auto=False):
     """
