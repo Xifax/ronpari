@@ -1,6 +1,7 @@
 from tinydb import Query
 from tinydb import TinyDB
 
+# TODO: put this file into .config folder
 db = TinyDB("db.json")
 
 
@@ -28,6 +29,7 @@ def get_path() -> str:
 
 def update_manga(
     title,
+    manga_id=None,
     total_chapters=None,
     current_chapter=None,
     last_downloaded=None,
@@ -47,6 +49,9 @@ def update_manga(
 
     if last_downloaded is not None:
         data["last_downloaded"] = last_downloaded
+
+    if manga_id is not None:
+        data["manga_id"] = manga_id
 
     manga_table.upsert(data, Manga.title == title)
 

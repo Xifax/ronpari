@@ -10,8 +10,6 @@ import requests
 from mangadex import Api
 from mangadex import Chapter
 from mangadex import Manga
-from MangaDexPy import MangaDex
-from MangaDexPy import downloader
 from rich.progress import track
 
 from ronpari.store import get_user
@@ -36,6 +34,13 @@ def get_client():
 def search_manga(title: str) -> List[Manga]:
     with console.status(f"Searching {title}..."):
         return get_client().get_manga_list(title=title)
+
+
+def get_manga_by_id(manga_id: str) -> Manga | None:
+    with console.status("Getting manga info..."):
+        found_manga = get_client().get_manga_list(manga_id=manga_id)
+        if found_manga:
+            return found_manga[0]
 
 
 def get_volumes(manga: Manga) -> dict:
