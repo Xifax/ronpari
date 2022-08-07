@@ -1,8 +1,14 @@
+# CLI to read manga
+
+One eye in London, other in Paris -- ronpari!
+
 # Idea
+
+*ACTUAL IMPLEMENTATION VARIES*
 
 Simple cli tool to read manga. Imagined usage:
 
-## List current manga
+## List current manga [DONE]
 
 > ronpari
 
@@ -12,9 +18,9 @@ Simple cli tool to read manga. Imagined usage:
 3. Something Tabi [30/321]
 ```
 
-## Continue manga from 2nd chapter
+## Continue manga from 2nd chapter [DONE]
 
-> ronpari 1
+> ronpari read 1
 
 ```bash
 # Continue first manga from chapter 2
@@ -24,41 +30,43 @@ OR
 ronpari image viewer to /path/to/chapter
 ```
 
-## Continue manga from specific chapter
+## Continue manga from specific chapter [DONE]
 
-> ronpari 2 10
+> ronpari read 2 10
 
 ```bash
 # Continue second manga from chapter 10
 ```
 
-## List manga
+## Automatically open next chapter (if possible) [DONE]
 
-> ronpari <manga name>
+> ronpari read 2 --procceed --auto
 
-## List and download manga
+> ronpari read 2 -pa
+
+## Ask for confirmation to open next chapter [DONE]
+
+> ronpari read 2 --procceed
+
+## List manga and refresh [DONE]
+
+> ronpari status --refresh
+
+## List and download manga [DONE]
 
 > ronpari <manga name> --download
 
-## List and read manga
-
-> ronpari <manga name> --read
-
-## Download all or just range of chapters (next 10?)
-
-> TODO!
-
-## Download active manga
+## [TODO] Download active manga
 
 > ronpari download 2
 
 > ronpari download 2 1..100
 
-## Archive manga
+## [TODO] Archive manga
 
 > ronpari archive 3
 
-## Cleanup manga
+## [TODO] Cleanup manga
 
 > ronpari cleanup
 
@@ -66,7 +74,7 @@ ronpari image viewer to /path/to/chapter
 # Removes all chapters before current from disk
 ```
 
-## Path to current chapter
+## [TODO]Path to current chapter
 
 > ronpari path 1
 
@@ -79,14 +87,20 @@ ronpari image viewer to /path/to/chapter
 
 ## Settings
 
+TODO: refactor this method and options
+
 > ronpari set --path <download_path>
 
 > ronpari set --user <user> --pass <pass>
 
+## [TODO] Set custom command to view images
+
+Currently "imv" is used.
+
 ## TODOisms
 
-1. Debug MangaDex.Py downloader (!!!)
-2. Use custom downloader with Rich progressbar (!!)
-3. Store status in tinydb (!?)
-4. Somehow save current chapter and latest chapter when reading (ZSH env variables from imv?)
-5. Sync with MangaDex via login|passwd (tinydb)
+1. ~~Debug MangaDex.Py downloader (!!!)~~
+2. ~~Use custom downloader with Rich progressbar (!!)~~
+3. ~~Store status in tinydb (!?)~~
+4. ~~Somehow save current chapter and latest chapter when reading (ZSH env variables from imv?)~~
+5. Sync with MangaDex via login|passwd (tinydb) [WONTDO]
