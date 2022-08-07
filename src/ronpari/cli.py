@@ -6,16 +6,12 @@ from pathlib import Path
 # import click
 import pretty_errors
 import rich_click as click
-
-# from rich.panel import Panel
+from rich.progress import track
 from rich.prompt import Confirm
 from rich.prompt import IntPrompt
 from rich.prompt import Prompt
-
-# from rich.tree import Tree
 from rich.table import Table
 
-# from ronpari.dex import download_manga
 from ronpari.dex import download_chapter
 from ronpari.dex import get_chapter
 from ronpari.dex import get_manga_by_id
@@ -27,11 +23,6 @@ from ronpari.store import update_user
 
 from . import console
 from . import search_manga
-
-# from ronpari.viewer import view_image
-
-
-# from rich import inspect
 
 
 @click.group(invoke_without_command=True)
@@ -110,8 +101,10 @@ def download(title, number):
         #     filter(lambda c: c.language == "en", selected_manga.get_chapters())
         # )
 
+        # TODO: use refactored function?
+
         # Or just count keys?
-        volumes = get_volumes(selected_manga)
+        volumes = get_volumes(selected_manga.manga_id)
         # last_volume = max(map(lambda n: int(n) if n.isdigit() else 0, volumes.keys()))
 
         # TODO: variant with just last chapter?
@@ -184,15 +177,24 @@ def download(title, number):
 
 @manga_cli.command()
 @click.option("-r", "--refresh", is_flag=True, help="Fetch latest information")
-def status(refresh):
+def status(refresh=False):
     """
     Show active manga [marked so via download|search commands]
     """
     manga_list = get_manga()
 
     if refresh:
-        # TODO: fetch latest manga chapter_map
-        ...
+        description = "Fetching manga updates"
+        for manga in track(manga_list, description=description):
+            manga_id = manga.get("manga_id", None)
+            manga_title = manga.get("title", "")
+            description = f"Fetching updates for {manga.get('title')}"
+
+            if manga_id is None:
+                continue
+
+            chapter_map = _update_chapter_map(manga_id)
+            update_manga(manga_title, chapter_map=chapter_map)
 
     # TODO: included downloaded [from file system] + current chapter
     for i, manga in enumerate(manga_list):
@@ -202,10 +204,22 @@ def status(refresh):
         else:
             last_chapter = "???"
 
-        console.print(
-            f"[red]#{i+1}[/red] {manga.get('title')} "
-            f"[italic]{manga.get('current_chapter')}[/italic] / {last_chapter} [black][{manga.get('total_chapters')}][/black]"
-        )
+        current_chapter = manga.get("current_chapter")
+        title = manga.get("title")
+
+        # TODO: edge case for something like 35.5
+        if last_chapter == current_chapter:
+            info_line = (
+                f"[grey15]#{i+1} {title} "
+                f"[italic]{current_chapter}[/italic] / {last_chapter} [{manga.get('total_chapters')}][/grey15]"
+            )
+        else:
+            info_line = (
+                f"[red]#{i+1}[/red] {title} "
+                f"[italic]{current_chapter}[/italic] / {last_chapter} [black][{manga.get('total_chapters')}][/black]"
+            )
+
+        console.print(info_line)
 
 
 @manga_cli.command()
@@ -265,69 +279,28 @@ def read(number, chapter=None, proceed=False, auto=False):
         else:
             loop = False
 
-    return
-    # selected_chapter = _get_chapter(active_chapter, chapter_map)
-    # path = Path(get_path()) / title / str(float(selected_chapter.get("chapter")))
-
-    # Check if active chapter is downloaded and download if required
-    path = _check_and_download(title, active_chapter, chapter_map)
-
-    # # TODO: fix last downloaded
-    # # last_downloaded = None
-    # # Try to download next chapter
-    # if not path.exists():
-    #     selected_chapter = _get_chapter(active_chapter, chapter_map)
-    #     manga_chapter = get_chapter(selected_chapter.get("id"))
-    #     download_chapter(title, manga_chapter)
-    #     # last_downloaded = chapter
-
-    # Download next chapter in background
-    console.print(path)
-    threading.Thread(
-        target=_download_in_background,
-        name="Fetching next chapter",
-        args=[title, active_chapter, chapter_map],
-    ).start()
-
-    # Open image viewer for current chapter path
-    cmd = ["imv", str(path)]
-    subprocess.Popen(cmd).wait()
-
-    # To the next chapter!
-    if proceed:
-        open_next_next_chapter = Confirm.ask("Next chapter?")
-        if open_next_next_chapter:
-            cmd = ["imv", str(path)]
-            subprocess.Popen(cmd).wait()
-
-    return
-
-    # next_chapter = _get_chapter(active_chapter, chapter_map)
-    # available_chapters = sorted(
-    #     chapter_map.keys(), key=lambda c: float(c) if c != "none" else 0.0
-    # )
-    # try:
-    #     current_chapter_index = available_chapters.index(next_chapter.get("chapter"))
-    #     next_chapter = available_chapters[current_chapter_index + 1]
-    #     console.print(f"Next chapter is {next_chapter}")
-    # except (ValueError, IndexError) as e:
-    #     # TODO: print "NO NEXT CHAPTER" or something
-    #     console.print(e)
-
-    # Increment chapter according to chapter_map IF POSSIBLE
-    next_chapter = _get_next_chapter(active_chapter, chapter_map)
-
-    # When finished: update manga -> increment current chapter
-    update_manga(
-        title=title,
-        current_chapter=next_chapter,
-        # last_downloaded=last_downloaded,
-    )
-
 
 ###################
 # Utility methods #
 ###################
+
+
+def _update_chapter_map(manga_id: str) -> dict:
+    """
+    Get chapter map from MangaDex by manga id
+    """
+    volumes = get_volumes(manga_id)
+    chapter_map = {}
+
+    for _, v in volumes.items():
+        chapters = []
+        for chapter, contents in v.get("chapters").items():
+            chapters.append(chapter)
+            chapter_map[chapter] = contents
+
+        chapters = " ".join(reversed(chapters))
+
+    return chapter_map
 
 
 def _view_chapter(title, active_chapter, chapter_map) -> str | int | float:
@@ -389,10 +362,8 @@ def _get_next_chapter(active_chapter, chapter_map) -> str | int | float:
     try:
         current_chapter_index = available_chapters.index(next_chapter.get("chapter"))
         next_chapter_number = available_chapters[current_chapter_index + 1]
-        # console.print(f"Next chapter is {next_chapter}")
-    except (ValueError, IndexError) as e:
-        # TODO: print "NO NEXT CHAPTER" or something
-        console.print(e)
+    except (ValueError, IndexError):
+        ...
 
     return next_chapter_number
 
@@ -401,36 +372,9 @@ def _download_in_background(title, active_chapter, chapter_map):
     """
     Get next chapter and download it
     """
-    # # TODO: move to separate function and refactor
-    # next_chapter = _get_chapter(active_chapter, chapter_map)
-    # available_chapters = sorted(
-    #     chapter_map.keys(), key=lambda c: float(c) if c != "none" else 0.0
-    # )
-    # next_chapter_number: str|int|float = next_chapter.get('chapter', '0')
-    #
-    # # TODO: move into separate function!
-    # try:
-    #     current_chapter_index = available_chapters.index(next_chapter.get("chapter"))
-    #     next_chapter_number = available_chapters[current_chapter_index + 1]
-    #     # console.print(f"Next chapter is {next_chapter}")
-    # except (ValueError, IndexError) as e:
-    #     # TODO: print "NO NEXT CHAPTER" or something
-    #     console.print(e)
-
     next_chapter_number = _get_next_chapter(active_chapter, chapter_map)
 
     _check_and_download(title, next_chapter_number, chapter_map)
-
-    # # TODO: move to seprate function and refactor
-    # selected_chapter = _get_chapter(next_chapter_number, chapter_map)
-    # path = Path(get_path()) / title / str(float(selected_chapter.get("chapter", '')))
-    #
-    # # last_downloaded = None
-    # # Try to download next chapter
-    # if not path.exists():
-    #     manga_chapter = get_chapter(selected_chapter.get("id", ''))
-    #     download_chapter(title, manga_chapter)
-    #     # last_downloaded = chapter
 
 
 def _check_and_download(title, chapter_number, chapter_map) -> Path:
@@ -450,74 +394,6 @@ def _check_and_download(title, chapter_number, chapter_map) -> Path:
 ######################
 # Additional methods #
 ######################
-
-
-# @manga_cli.command()
-# @click.argument("title")
-# @click.option(
-#     "--download",
-#     default=False,
-#     is_flag=True,
-#     help="Prompt for downloading whole manga after search results",
-# )
-# @click.option(
-#     "--read",
-#     default=False,
-#     is_flag=True,
-#     help="Prompt for chapters to read after search results",
-# )
-# def search(title, download, read):
-#     """
-#     Search and optionally download|read manga
-#     """
-#     # TODO: move to separate function (modularize!)
-#     found = search_manga(title)
-#     for number, item in enumerate(found):
-#         console.print(
-#             f'[red]#{number+1}[/red] [bold]{item.title.get("en", "")}[/bold] '
-#             f"[italic]{item.status}[/italic]"
-#         )
-#
-#     if download:
-#         number = IntPrompt.ask("Enter number to download")
-#         if number not in range(1, len(found)):
-#             console.print("[yellow]No such manga[/yellow]")
-#             return
-#
-#         selected_manga = found[number - 1]
-#         console.print(selected_manga)
-#
-#         # TODO: check that chapters are in english
-#         chapters = list(
-#             filter(lambda c: c.language == "en", selected_manga.get_chapters())
-#         )
-#         chapters = list(sorted(chapters, key=lambda c: c.published_at))
-#
-#         # download_chapter(chapters[0])
-#         # download_manga(selected_manga)
-#
-#     if read:
-#         number = IntPrompt.ask("Enter number to download")
-#         if number not in range(1, len(found)):
-#             console.print("[yellow]No such manga[/yellow]")
-#             return
-#
-#         selected_manga = found[number - 1]
-#
-#         # Get available chapters
-#         with console.status("Getting chapter list"):
-#             chapters = list(
-#                 filter(lambda c: c.language == "en", selected_manga.get_chapters())
-#             )
-#             console.print(f"Total chapters: {len(chapters)}")
-#
-#         chapter_number = IntPrompt.ask("Chapter to start at")
-#
-#         # TODO: create entry in db
-#         update_manga(selected_manga.title.get("en"), len(chapters), chapter_number)
-#
-#         # TODO: optionally download said chapter
-#         download_chapter(chapters[chapter_number - 1])
 
 
 @manga_cli.command()

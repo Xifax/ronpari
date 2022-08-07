@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ronpari"
-version = "0.5.0"
+version = "0.6.0"
 description = "CLI tool for reading manga from Mangadex"
 authors = ["Artem Basenko"]
 
@@ -11,10 +11,7 @@ rich = "^12.5.1"
 rich-click = "^1.5.1"
 tinydb = "^4.7.0"
 mangadex = "^2.5.2"
-opencv-python = "^4.6.0"
-imutils = "^0.5.4"
 screeninfo = "^0.8"
-Pillow = "^9.2.0"
 pretty-errors = "^1.2.25"
 appdirs = "^1.4.4"
 

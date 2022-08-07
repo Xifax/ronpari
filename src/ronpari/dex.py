@@ -37,20 +37,14 @@ def get_manga_by_id(manga_id: str) -> Manga | None:
             return found_manga[0]
 
 
-def get_volumes(manga: Manga) -> dict:
+def get_volumes(manga_id: str) -> dict:
     return api.get_manga_volumes_and_chapters(
-        manga_id=manga.manga_id, translatedLanguage="en"
+        manga_id=manga_id, translatedLanguage="en"
     )
 
 
 def get_chapter(chapter_id: str) -> Chapter:
     return api.get_chapter(chapter_id)
-
-
-# def download_manga(manga: Manga) -> bool:
-#     downloader.dl_manga(manga, base_path="/home/xifax/Downloads/test/")
-#     # TODO: save status to DB if download is complete
-#     return True
 
 
 def download_chapter(manga: str, chapter: Chapter):

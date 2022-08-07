@@ -48,8 +48,11 @@ def update_manga(
     manga_table = db.table("manga")
     data = {
         "title": title,
-        "current_chapter": current_chapter,
     }
+
+    if current_chapter is not None:
+        data["current_chapter"] = current_chapter
+
     if chapter_map is not None:
         data["chapter_map"] = chapter_map
 
