@@ -1,4 +1,5 @@
 import re
+import shutil
 import subprocess
 import threading
 from pathlib import Path
@@ -278,6 +279,34 @@ def read(number, chapter=None, proceed=False, auto=False):
             next_chapter = _view_chapter(title, next_chapter, chapter_map)
         else:
             loop = False
+
+
+# TODO: specify manga number
+@manga_cli.command()
+def cleanup():
+    """
+    Cleanup downloaded chapters
+    """
+    manga_list = get_manga()
+
+    for i, manga in enumerate(manga_list):
+        current_chapter = manga.get("current_chapter")
+        title = manga.get("title")
+
+        path = Path(get_path()) / title
+
+        folders_to_delete = []
+
+        for folder in path.iterdir():
+            if folder.is_dir():
+                if float(folder.name) < float(current_chapter):
+                    console.print(f"Will delete {folder}")
+                    folders_to_delete.append(folder)
+
+        delete = Confirm.ask("Delete those folders?")
+        if delete:
+            for folder in folders_to_delete:
+                shutil.rmtree(folder)
 
 
 ###################
