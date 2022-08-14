@@ -351,7 +351,7 @@ def _view_chapter(title, active_chapter, chapter_map) -> str | int | float:
     ).start()
 
     # Open image viewer for current chapter path
-    cmd = ["imv", str(path)]
+    cmd = ["imv", "-f", str(path)]
     subprocess.Popen(cmd).wait()
 
     # Increment chapter according to chapter_map IF POSSIBLE
