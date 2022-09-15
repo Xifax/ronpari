@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ronpari"
-version = "0.6.0"
+version = "0.6.1"
 description = "CLI tool for reading manga from Mangadex"
 authors = ["Artem Basenko"]
 
@@ -21,6 +21,8 @@ isort = "^5.10.1"
 poethepoet = "^0.15.0"
 bpython = "^0.22.1"
 flake8 = "^4.0.1"
+icecream = "^2.1.3"
+wily = "^1.23.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -184,6 +184,8 @@ def status(refresh=False):
     """
     manga_list = get_manga()
 
+    # ic(manga_list)
+
     if refresh:
         description = "Fetching manga updates"
         for manga in track(manga_list, description=description):
@@ -196,6 +198,11 @@ def status(refresh=False):
 
             chapter_map = _update_chapter_map(manga_id)
             update_manga(manga_title, chapter_map=chapter_map)
+
+        # Force update current list
+        manga_list = get_manga()
+
+    # ic(manga_list)
 
     # TODO: included downloaded [from file system] + current chapter
     for i, manga in enumerate(manga_list):
