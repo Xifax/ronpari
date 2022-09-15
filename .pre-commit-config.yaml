@@ -36,3 +36,9 @@ repos:
         language: system
         types: [ python ]
         files: ^(src/|tests/)
+      - id: wily
+        name: wily
+        entry: wily diff
+        verbose: true
+        language: python
+        additional_dependencies: [wily]
