@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ronpari"
-version = "0.6.1"
+version = "0.6.2"
 description = "CLI tool for reading manga from Mangadex"
 authors = ["Artem Basenko"]
 

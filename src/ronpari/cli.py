@@ -17,8 +17,10 @@ from ronpari.dex import download_chapter
 from ronpari.dex import get_chapter
 from ronpari.dex import get_manga_by_id
 from ronpari.dex import get_volumes
+from ronpari.store import archive_manga
 from ronpari.store import get_manga
 from ronpari.store import get_path
+from ronpari.store import restore_manga
 from ronpari.store import update_manga
 from ronpari.store import update_user
 
@@ -178,11 +180,16 @@ def download(title, number):
 
 @manga_cli.command()
 @click.option("-r", "--refresh", is_flag=True, help="Fetch latest information")
-def status(refresh=False):
+@click.option("-a", "--archived", is_flag=True, help="Show archived")
+def status(refresh=False, archived=False):
     """
     Show active manga [marked so via download|search commands]
     """
-    manga_list = get_manga()
+    manga_list = get_manga(archived)
+
+    # Show only unarchived manga
+    # TODO: move to get_manga as an option
+    # manga_list = [m for m in manga_list if not m.get("archived", False)]
 
     # ic(manga_list)
 
@@ -430,6 +437,42 @@ def _check_and_download(title, chapter_number, chapter_map) -> Path:
 ######################
 # Additional methods #
 ######################
+
+
+@manga_cli.command()
+@click.argument("number", type=int)
+def archive(number):
+    """
+    Archive specified manga (hide from status)
+    """
+
+    # Select manga by number
+    manga_list = get_manga()
+    if number not in range(1, len(manga_list) + 1):
+        console.print("[yellow]No such manga[/yellow]")
+        return
+
+    selected_manga = manga_list[number - 1]
+    title = selected_manga.get("title", "none")
+    archive_manga(title)
+
+
+@manga_cli.command()
+@click.argument("number", type=int)
+def restore(number):
+    """
+    Restore specified manga from archive (show in status)
+    """
+
+    # Select manga by number
+    manga_list = get_manga(show_archived=True)
+    if number not in range(1, len(manga_list) + 1):
+        console.print("[yellow]No such manga[/yellow]")
+        return
+
+    selected_manga = manga_list[number - 1]
+    title = selected_manga.get("title", "none")
+    restore_manga(title)
 
 
 @manga_cli.command()

@@ -1,10 +1,10 @@
 repos:
- # - repo: https://github.com/pre-commit/mirrors-mypy
- #    rev: v0.800
- #    hooks:
- #      - id: mypy
- #        args: [--no-strict-optional, --ignore-missing-imports]
- #        files: ^(app/|tests/)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.800
+    hooks:
+      - id: mypy
+        args: [--no-strict-optional, --ignore-missing-imports]
+        files: ^(app/|tests/)
   - repo: local
     hooks:
       - id: black
@@ -29,6 +29,7 @@ repos:
             '--trailing-comma',
             '--use-parentheses',
             '--ensure-newline-before-comments',
+            '--filter-files',
         ]
       - id: flake8
         name: flake8

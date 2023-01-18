@@ -68,6 +68,24 @@ def update_manga(
     manga_table.upsert(data, Manga.title == title)
 
 
-def get_manga() -> list:
+def get_manga(show_archived=False) -> list:
+    """Get manga list but optionally hide|show archived entities."""
     manga_table = db.table("manga")
-    return manga_table.all()
+    manga_list = manga_table.all()
+    if not show_archived:
+        manga_list = [m for m in manga_list if not m.get("archived", False)]
+    return manga_list
+
+
+def archive_manga(manga_title):
+    Manga = Query()
+    manga_table = db.table("manga")
+    data = {"archived": True}
+    manga_table.upsert(data, Manga.title == manga_title)
+
+
+def restore_manga(manga_title):
+    Manga = Query()
+    manga_table = db.table("manga")
+    data = {"archived": False}
+    manga_table.upsert(data, Manga.title == manga_title)
