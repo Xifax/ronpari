@@ -8,7 +8,7 @@ One eye in London, other in Paris -- ronpari!
 
 Simple cli tool to read manga. Imagined usage:
 
-## List current manga [DONE]
+## List current manga
 
 > ronpari
 
@@ -18,7 +18,7 @@ Simple cli tool to read manga. Imagined usage:
 3. Something Tabi [30/321]
 ```
 
-## Continue manga from 2nd chapter [DONE]
+## Continue manga from 2nd chapter
 
 > ronpari read 1
 
@@ -30,7 +30,7 @@ OR
 ronpari image viewer to /path/to/chapter
 ```
 
-## Continue manga from specific chapter [DONE]
+## Continue manga from specific chapter
 
 > ronpari read 2 10
 
@@ -38,35 +38,35 @@ ronpari image viewer to /path/to/chapter
 # Continue second manga from chapter 10
 ```
 
-## Automatically open next chapter (if possible) [DONE]
+## Automatically open next chapter (if possible)
 
 > ronpari read 2 --procceed --auto
 
 > ronpari read 2 -pa
 
-## Ask for confirmation to open next chapter [DONE]
+## Ask for confirmation to open next chapter
 
 > ronpari read 2 --procceed
 
-## List manga and refresh [DONE]
+## List manga and refresh
 
 > ronpari status --refresh
 
-## List and download manga [DONE]
+## List and download manga
 
 > ronpari <manga name> --download
 
-## [TODO] Download active manga
+## Download active manga
 
 > ronpari download 2
 
 > ronpari download 2 1..100
 
-## [TODO] Archive manga
+## Archive manga
 
 > ronpari archive 3
 
-## [TODO] Cleanup manga
+## Cleanup manga
 
 > ronpari cleanup
 
