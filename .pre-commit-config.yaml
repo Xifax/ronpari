@@ -18,7 +18,6 @@ repos:
         entry: isort
         language: system
         types: [ python ]
-        include: ^(src/|tests/)
         exclude: '.*/migrations/.*'
         args: [
             '--profile=black',
