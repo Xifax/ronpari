@@ -1,10 +1,8 @@
 repos:
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.950
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.191'
     hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-python-dateutil
+      - id: ruff
   - repo: local
     hooks:
       - id: black
@@ -30,12 +28,6 @@ repos:
             '--ensure-newline-before-comments',
             '--filter-files',
         ]
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: system
-        types: [ python ]
-        files: ^(src/|tests/)
       - id: wily
         name: wily
         entry: wily diff

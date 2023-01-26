@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 from pathlib import Path
+from typing import Dict
 from typing import List
 from urllib.parse import urlparse
 
@@ -16,7 +17,7 @@ from ronpari.store import get_user
 from ronpari.terminal import console
 
 api: Api = Api()
-auth = {}
+auth: Dict[str, str] = {}
 
 
 def get_client():
@@ -25,7 +26,7 @@ def get_client():
     return api
 
 
-def search_manga(title: str) -> List[Manga]:
+def search_manga(title: str) -> List[Manga] | None:
     with console.status(f"Searching {title}..."):
         return get_client().get_manga_list(title=title)
 

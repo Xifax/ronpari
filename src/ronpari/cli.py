@@ -4,8 +4,7 @@ import subprocess
 import threading
 from pathlib import Path
 
-# import click
-import pretty_errors
+import pretty_errors  # noqa: F401
 import rich_click as click
 from rich.progress import track
 from rich.prompt import Confirm
@@ -181,17 +180,18 @@ def download(title, number):
 @manga_cli.command()
 @click.option("-r", "--refresh", is_flag=True, help="Fetch latest information")
 @click.option("-a", "--archived", is_flag=True, help="Show archived")
-def status(refresh=False, archived=False):
+@click.option("--only-archived", is_flag=True, help="Show archived only")
+def status(refresh=False, archived=False, only_archived=False):
     """
     Show active manga [marked so via download|search commands]
     """
-    manga_list = get_manga(archived)
 
-    # Show only unarchived manga
-    # TODO: move to get_manga as an option
-    # manga_list = [m for m in manga_list if not m.get("archived", False)]
-
-    # ic(manga_list)
+    if only_archived:
+        manga_list = [
+            m for m in get_manga(show_archived=True) if m.get("archived", False)
+        ]
+    else:
+        manga_list = get_manga(archived)
 
     if refresh:
         description = "Fetching manga updates"
@@ -208,8 +208,6 @@ def status(refresh=False, archived=False):
 
         # Force update current list
         manga_list = get_manga()
-
-    # ic(manga_list)
 
     # TODO: included downloaded [from file system] + current chapter
     for i, manga in enumerate(manga_list):
@@ -303,7 +301,7 @@ def cleanup():
     """
     manga_list = get_manga()
 
-    for i, manga in enumerate(manga_list):
+    for _, manga in enumerate(manga_list):
         current_chapter = manga.get("current_chapter")
         title = manga.get("title")
 
@@ -340,8 +338,6 @@ def _update_chapter_map(manga_id: str) -> dict:
         for chapter, contents in v.get("chapters").items():
             chapters.append(chapter)
             chapter_map[chapter] = contents
-
-        chapters = " ".join(reversed(chapters))
 
     return chapter_map
 

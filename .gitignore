@@ -166,3 +166,4 @@ cython_debug/
 
 # User
 db.json
+.gdb_history
