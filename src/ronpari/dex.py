@@ -60,9 +60,7 @@ def download_chapter(manga: str, chapter: Chapter):
     chapter_path.mkdir(parents=True, exist_ok=True)
 
     # TODO: move to downloader
-    for image_url in track(
-        images, description=f"Downloading images to {str(chapter_path)}"
-    ):
+    for image_url in track(images, description=f"Downloading to\n{str(chapter_path)}"):
         res = requests.get(image_url, stream=True)
 
         if res.status_code == 200:

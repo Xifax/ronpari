@@ -68,6 +68,28 @@ def update_manga(
     manga_table.upsert(data, Manga.title == title)
 
 
+def update_progress(manga_id, manga_number, chapter):
+    """Update various stats."""
+    Progress = Query()
+    progress_table = db.table("progress")
+    data = {
+        "meta": "stats",
+        "manga_id": manga_id,
+        "number": manga_number,
+        "chapter": chapter,
+    }
+    progress_table.upsert(data, Progress.meta == "stats")
+
+
+def get_progress():
+    # Progress = Query()
+    progress_table = db.table("progress")
+    results = progress_table.all()
+    if results:
+        return results[0]
+    return {}
+
+
 def get_manga(show_archived=False) -> list:
     """Get manga list but optionally hide|show archived entities."""
     manga_table = db.table("manga")

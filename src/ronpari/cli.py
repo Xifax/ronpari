@@ -19,8 +19,10 @@ from ronpari.dex import get_volumes
 from ronpari.store import archive_manga
 from ronpari.store import get_manga
 from ronpari.store import get_path
+from ronpari.store import get_progress
 from ronpari.store import restore_manga
 from ronpari.store import update_manga
+from ronpari.store import update_progress
 from ronpari.store import update_user
 
 from . import console
@@ -73,6 +75,7 @@ def download(title, number):
     else:
 
         found = search_manga(title)
+
         for number, item in enumerate(found):
             console.print(
                 f'[red]#{number+1}[/red] [bold]{item.title.get("en", "")}[/bold] '
@@ -223,8 +226,8 @@ def status(refresh=False, archived=False, only_archived=False):
         # TODO: edge case for something like 35.5
         if last_chapter == current_chapter:
             info_line = (
-                f"[grey15]#{i+1} {title} "
-                f"[italic]{current_chapter}[/italic] / {last_chapter} [{manga.get('total_chapters')}][/grey15]"
+                f"[grey42]#{i+1} {title} "
+                f"[italic]{current_chapter}[/italic] / {last_chapter} [{manga.get('total_chapters')}][/grey42]"
             )
         else:
             info_line = (
@@ -270,6 +273,13 @@ def read(number, chapter=None, proceed=False, auto=False):
     if chapter is not None:
         active_chapter = chapter
 
+    # Save meta progress
+    update_progress(
+        selected_manga.get("manga_id"),
+        manga_number=number,
+        chapter=active_chapter,
+    )
+
     # View active chapter, download next, exit
     if not proceed:
         _view_chapter(title, active_chapter, chapter_map)
@@ -291,6 +301,14 @@ def read(number, chapter=None, proceed=False, auto=False):
             next_chapter = _view_chapter(title, next_chapter, chapter_map)
         else:
             loop = False
+
+
+@manga_cli.command()
+@click.pass_context
+def go(ctx):
+    """Continue to read previously opened manga, in auto proceed mode."""
+    progress = get_progress()
+    ctx.invoke(read, number=progress.get("number"), chapter=progress.get("chapter"))
 
 
 # TODO: specify manga number
