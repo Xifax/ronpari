@@ -20,6 +20,7 @@ from ronpari.store import archive_manga
 from ronpari.store import get_manga
 from ronpari.store import get_path
 from ronpari.store import get_progress
+from ronpari.store import move_bottom
 from ronpari.store import restore_manga
 from ronpari.store import update_manga
 from ronpari.store import update_progress
@@ -306,9 +307,25 @@ def read(number, chapter=None, proceed=False, auto=False):
 @manga_cli.command()
 @click.pass_context
 def go(ctx):
-    """Continue to read previously opened manga, in auto proceed mode."""
+    """Continue to read previously opened manga, in auto proceed mode"""
     progress = get_progress()
     ctx.invoke(read, number=progress.get("number"), chapter=progress.get("chapter"))
+
+
+@manga_cli.command()
+@click.argument("number", type=int)
+def bottom(number):
+    """Move chosen manga to bottom of list"""
+
+    # Select manga by number
+    manga_list = get_manga()
+    if number not in range(1, len(manga_list) + 1):
+        console.print("[yellow]No such manga[/yellow]")
+        return
+
+    selected_manga = manga_list[number - 1]
+    title = selected_manga.get("title", "none")
+    move_bottom(title)
 
 
 # TODO: specify manga number

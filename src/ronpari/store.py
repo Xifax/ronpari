@@ -111,3 +111,19 @@ def restore_manga(manga_title):
     manga_table = db.table("manga")
     data = {"archived": False}
     manga_table.upsert(data, Manga.title == manga_title)
+
+
+def move_bottom(manga_title):
+    manga_table = db.table("manga")
+    entry_to_move = Query().title == manga_title
+    entry = manga_table.get(entry_to_move)
+
+    if entry:
+        # remove the entry
+        manga_table.remove(entry_to_move)
+        # insert the entry as the last one
+        manga_table.insert(entry)
+
+
+def move_top(manga_title):
+    ...
