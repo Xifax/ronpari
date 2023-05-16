@@ -89,7 +89,7 @@ def download(title, number):
 
         if len(found) > 1:
             number = IntPrompt.ask("Select manga")
-            if number not in range(1, len(found)):
+            if number not in range(1, len(found) + 1):
                 console.print("[yellow]No such manga[/yellow]")
                 return
 
